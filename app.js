@@ -1,38 +1,36 @@
-const http = require ('http');
-const fs = require ('fs');
-const path = require ('path');
+const path = require('path')
+const express = require('express')
+const exphbs = require('express-handlebars')
+const port = 8000
 
-function onRequest (request, response) {
-    response.writeHead(200, {'Content-Type' : 'text/html'});
+const app = express()
 
-    const createPath = (page) => path.resolve (__dirname, 'views', `${page}.html`);
+app.engine('.hbs', exphbs.engine({
+  defaultLayout: 'main',
+  extname: '.hbs',
+  layoutsDir: path.join(__dirname, 'views/layouts')
+}))
+app.set('view engine', '.hbs')
+app.set('views', path.join(__dirname, 'views'))
 
-    let basePath = '';
-    switch (request.url) {
-        case '/':
-            basePath = createPath('index');
-            break;
-        case '/login':
-            basePath = createPath('login');
-            break;
-        case '/register':
-            basePath = createPath('register');
-            break;            
-        default:
-            basePath = createPath('error');
-            break;
-    }
+app.get('/', (request, response) => {
+  response.render('home', {
+    name: 'Visitor'
+  })
+})
 
-    fs.readFile(basePath, (err, data) => {
-        if (err) {
-            console.log(err);
-            response.end();
-        }
-        else {
-            response.write(data);
-            response.end();
-        }
-    })
-}
+app.get('/register', (request, response) => {
+  response.render('register')
+})
 
-http.createServer(onRequest).listen(8000);
+app.get('/login', (request, response) => {
+  response.render('login')
+})
+
+app.listen(port, (err) => {
+  if (err) {
+    return console.log('something bad happened', err)
+  }
+
+  console.log(`server is listening on ${port}`)
+})
